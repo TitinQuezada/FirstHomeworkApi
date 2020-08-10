@@ -1,5 +1,7 @@
+using Boundaries.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +21,10 @@ namespace FirstHomeworkApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddDbContext<FristHomeworkDbContext>((options) =>
+           options.UseSqlServer(Configuration.GetConnectionString("dbConnection"),
+           (op) => op.MigrationsAssembly("Boundaries.Persistence")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
