@@ -4,14 +4,16 @@ using Boundaries.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Boundaries.Persistence.Migrations
 {
     [DbContext(typeof(FristHomeworkDbContext))]
-    partial class FristHomeworkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200810052818_add_user_id")]
+    partial class add_user_id
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -11,11 +11,11 @@ namespace Core.Contracts
 
         Task<List<T>> FindAllAsync(Expression<Func<T, bool>> condition, params Expression<Func<T, object>>[] includes);
 
-        IOperationResult<T> Create(T entity);
+        void Create(T entity);
 
-        IOperationResult<T> Update(T entity);
+        void Update(T entity);
 
-        IOperationResult<T> Remove(T entity);
+        void Remove(T entity);
 
         Task<bool> ExistsAsync(Expression<Func<T, bool>> condition, params Expression<Func<T, object>>[] includes);
 

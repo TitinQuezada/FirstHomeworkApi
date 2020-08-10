@@ -1,5 +1,4 @@
 ﻿using Core.Contracts;
-using Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
@@ -10,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Boundaries.Persistence.Repositories
 {
-    public class BaseRepository<T> : IBaseRepository<T>  where T :class , new()
+    public class BaseRepository<T> : IBaseRepository<T> where T : class, new()
     {
         private readonly DbContext _context;
         private readonly DbSet<T> _set;
@@ -19,10 +18,9 @@ namespace Boundaries.Persistence.Repositories
             _context = context;
             _set = context.Set<T>();
         }
-        public IOperationResult<T> Create(T entity)
+        public void Create(T entity)
         {
-            _context.Add(entity);
-            return BasicOperationResult<T>.Ok();
+                _context.Add(entity);
         }
 
         public Task<bool> ExistsAsync(Expression<Func<T, bool>> condition, params Expression<Func<T, object>>[] includes)
@@ -61,23 +59,20 @@ namespace Boundaries.Persistence.Repositories
             return queryable.FirstOrDefaultAsync(condition);
         }
 
-        public IOperationResult<T> Remove(T entity)
+        public void Remove(T entity)
         {
             _context.Remove(entity);
-            return BasicOperationResult<T>.Ok();
         }
 
         public Task SaveAsync()
         {
-          return _context.SaveChangesAsync();
+            return _context.SaveChangesAsync();
         }
 
-        public IOperationResult<T> Update(T entity)
+        public void Update(T entity)
         {
             EntityEntry entityEntry = _context.Entry(entity);
             entityEntry.State = EntityState.Modified;
-
-            return BasicOperationResult<T>.Ok();
         }
     }
 }
