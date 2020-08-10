@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Boundaries.Persistence.Repositories
 {
-    public class BaseRepository<T> : IBaseRepository<T>  where T :class
+    public class BaseRepository<T> : IBaseRepository<T>  where T :class , new()
     {
         private readonly DbContext _context;
         private readonly DbSet<T> _set;
