@@ -1,6 +1,8 @@
-﻿namespace Core.ViewModels
+﻿using Core.Models;
+
+namespace Core.ViewModels
 {
-    public sealed class ApplicationUserCreateViewModel
+    public sealed class ApplicationUserViewModel
     {
         public string UserId { get; set; }
 
@@ -18,6 +20,6 @@
 
         public string Sector { get; set; }
 
-        public int MunicipalityId { get; set; }
+        public Municipality Municipality { get; set; }
     }
 }

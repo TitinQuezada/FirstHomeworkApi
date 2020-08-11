@@ -14,7 +14,6 @@ namespace Core.Managers
         private readonly IMunicipalityRepository _municipalityRepository;
         private readonly IUserRoleRepository _userRoleRepository;
 
-
         public ApplicationUserManager(IApplicationUserRepository applicationUserRepository,
             IMunicipalityRepository municipalityRepository, IUserRoleRepository userRoleRepository)
         {
@@ -76,46 +75,86 @@ namespace Core.Managers
             await _applicationUserRepository.SaveAsync();
         }
 
-        public IOperationResult<List<ApplicationUserCreateViewModel>> GetUsers()
+        public async Task<IOperationResult<List<ApplicationUserViewModel>>> GetUsers()
         {
             try
             {
-                List<ApplicationUserCreateViewModel> users = BuildUsersList();
+                List<ApplicationUserViewModel> users = await BuildUsersList();
 
-                return BasicOperationResult<List<ApplicationUserCreateViewModel>>.Ok(users);
+                return BasicOperationResult<List<ApplicationUserViewModel>>.Ok(users);
             }
             catch (Exception ex)
             {
-                return BasicOperationResult<List<ApplicationUserCreateViewModel>>.Fail("Ocurrió un error obteniendo la lista de usuarios.", ex.ToString());
+                return BasicOperationResult<List<ApplicationUserViewModel>>.Fail("Ocurrió un error obteniendo la lista de usuarios.", ex.ToString());
             }
         }
 
-        private List<ApplicationUserCreateViewModel> BuildUsersList()
+        public async Task<IOperationResult<ApplicationUserViewModel>> GetUser(string userId)
         {
-            List<ApplicationUserCreateViewModel> buildedUsersList = new List<ApplicationUserCreateViewModel>();
-            IEnumerable<ApplicationUser> dbUsers = _applicationUserRepository.GetUsers();
+            try
+            {
+                ApplicationUserViewModel users = await BuildUser(userId);
+
+                return BasicOperationResult<ApplicationUserViewModel>.Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BasicOperationResult<ApplicationUserViewModel>.Fail("Ocurrió un error obteniendoel usuario.", ex.ToString());
+            }
+        }
+
+        private async Task<ApplicationUserViewModel> BuildUser(string userId)
+        {
+            ApplicationUser dbUser = await _applicationUserRepository.FindAsync(user => user.UserId == userId,
+                user => user.Phone,
+                user => user.Role, x => x.Address,
+                user => user.Address.Municipality);
+
+            return new ApplicationUserViewModel
+            {
+                UserId = dbUser.UserId,
+                Name = dbUser.Name,
+                Lastname = dbUser.Lastname,
+                IdentificationNumber = dbUser.IdentificationNumber,
+                Email = dbUser.Email,
+                PhoneNumber = dbUser.Phone.PhoneNumber,
+                Address = dbUser.Address.Address,
+                Sector = dbUser.Address.Sector,
+                Municipality = dbUser.Address.Municipality,
+            };
+        }
+
+        private async Task<List<ApplicationUserViewModel>> BuildUsersList()
+        {
+            List<ApplicationUserViewModel> buildedUsersList = new List<ApplicationUserViewModel>();
+            IEnumerable<ApplicationUser> dbUsers = await _applicationUserRepository.FindAllAsync(user => !string.IsNullOrEmpty(user.UserId),
+                user => user.Phone,
+                user => user.Role, x => x.Address,
+                user => user.Address.Municipality);
 
             foreach (ApplicationUser user in dbUsers)
             {
-                ApplicationUserCreateViewModel userToAdd = BuildModelIntoViewModel(user);
+                ApplicationUserViewModel userToAdd = BuildModelIntoViewModel(user);
                 buildedUsersList.Add(userToAdd);
             }
 
             return buildedUsersList;
         }
 
-        private ApplicationUserCreateViewModel BuildModelIntoViewModel(ApplicationUser user)
+        private ApplicationUserViewModel BuildModelIntoViewModel(ApplicationUser user)
         {
-            ApplicationUserCreateViewModel viewModel = new ApplicationUserCreateViewModel();
-            viewModel.UserId = user.UserId;
-            viewModel.Name = user.Name;
-            viewModel.Lastname = user.Lastname;
-            viewModel.IdentificationNumber = user.IdentificationNumber;
-            viewModel.PhoneNumber = user.Phone.PhoneNumber;
-            viewModel.Email = user.Email;
-            viewModel.Address = user.Address.Address;
-            viewModel.Sector = user.Address.Sector;
-            //viewModel.Municipality = $"{user.Address.Municipality.MunicipalityId} {user.Address.Municipality.Description}";
+            ApplicationUserViewModel viewModel = new ApplicationUserViewModel
+            {
+                UserId = user.UserId,
+                Name = user.Name,
+                Lastname = user.Lastname,
+                IdentificationNumber = user.IdentificationNumber,
+                PhoneNumber = user.Phone.PhoneNumber,
+                Email = user.Email,
+                Address = user.Address.Address,
+                Sector = user.Address.Sector,
+                Municipality = user.Address.Municipality,
+            };
 
             return viewModel;
         }
@@ -128,7 +167,7 @@ namespace Core.Managers
                 UserPhone phone = BuildUserPhone(user);
                 UserRole role = await _userRoleRepository.FindAsync(x => x.UserRoleId == (int)RoleTypes.Client);
 
-                ApplicationUser userFound = await _applicationUserRepository.FindAsync(dbUser => dbUser.Email == user.Email);
+                ApplicationUser userFound = await _applicationUserRepository.FindAsync(dbUser => dbUser.UserId == user.UserId);
 
                 userFound.UserId = user.UserId;
                 userFound.Name = user.Name;

@@ -29,10 +29,22 @@ namespace FirstHomeworkApi.Controllers
             return Ok();
         }
 
-        [HttpGet]
-        public IActionResult GetAllUsers()
+        [HttpGet("{userId}")]
+        public async Task <IActionResult> GetUser(string userId)
         {
-            IOperationResult<List<ApplicationUserCreateViewModel>> getUsersResult = _applicationUserManager.GetUsers();
+            IOperationResult<ApplicationUserViewModel> userResult = await _applicationUserManager.GetUser(userId);
+            if (!userResult.Success)
+            {
+                return BadRequest(userResult.Message);
+            }
+
+            return Ok(userResult.Entity);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            IOperationResult<List<ApplicationUserViewModel>> getUsersResult = await _applicationUserManager.GetUsers();
             if (!getUsersResult.Success)
             {
                 return BadRequest(getUsersResult.Message);
@@ -41,7 +53,7 @@ namespace FirstHomeworkApi.Controllers
             return Ok(getUsersResult.Entity);
         }
 
-        [HttpPatch]
+        [HttpPut]
         public async Task<IActionResult> UpdateUser(ApplicationUserCreateViewModel user)
         {
             IOperationResult<string> userToUpdateResult = await _applicationUserManager.UpdateUser(user);
@@ -54,7 +66,7 @@ namespace FirstHomeworkApi.Controllers
             return Ok();
         }
 
-        [HttpDelete]
+        [HttpDelete("{userId}")]
         public async Task<IActionResult> DeleteUser (string userId)
         {
             IOperationResult<string> deletedUserResult = await _applicationUserManager.DeleteUser(userId);
