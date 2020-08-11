@@ -4,5 +4,6 @@ namespace Core.Contracts
 {
     public interface IApplicationUserRepository: IBaseRepository<ApplicationUser>
     {
+       
     }
 }
