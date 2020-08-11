@@ -19,5 +19,7 @@
         public string Sector { get; set; }
 
         public int MunicipalityId { get; set; }
+
+        public string Municipality { get; set; }
     }
 }

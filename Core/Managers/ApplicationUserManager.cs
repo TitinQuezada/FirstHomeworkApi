@@ -3,6 +3,7 @@ using Core.Enums;
 using Core.Models;
 using Core.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Core.Managers
@@ -74,5 +75,96 @@ namespace Core.Managers
             _applicationUserRepository.Create(userResult);
             await _applicationUserRepository.SaveAsync();
         }
+
+        public IOperationResult<List<ApplicationUserCreateViewModel>> GetUsers()
+        {
+            try
+            {
+                List<ApplicationUserCreateViewModel> users = BuildUsersList();
+
+                return BasicOperationResult<List<ApplicationUserCreateViewModel>>.Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BasicOperationResult<List<ApplicationUserCreateViewModel>>.Fail("Ocurrió un error obteniendo la lista de usuarios.", ex.ToString());
+            }
+        }
+
+        private List<ApplicationUserCreateViewModel> BuildUsersList()
+        {
+            List<ApplicationUserCreateViewModel> buildedUsersList = new List<ApplicationUserCreateViewModel>();
+            IEnumerable<ApplicationUser> dbUsers = _applicationUserRepository.GetUsers();
+
+            foreach (ApplicationUser user in dbUsers)
+            {
+                ApplicationUserCreateViewModel userToAdd = BuildModelIntoViewModel(user);
+                buildedUsersList.Add(userToAdd);
+            }
+
+            return buildedUsersList;
+        }
+
+        private ApplicationUserCreateViewModel BuildModelIntoViewModel(ApplicationUser user)
+        {
+            ApplicationUserCreateViewModel viewModel = new ApplicationUserCreateViewModel();
+            viewModel.UserId = user.UserId;
+            viewModel.Name = user.Name;
+            viewModel.Lastname = user.Lastname;
+            viewModel.IdentificationNumber = user.IdentificationNumber;
+            viewModel.PhoneNumber = user.Phone.PhoneNumber;
+            viewModel.Email = user.Email;
+            viewModel.Address = user.Address.Address;
+            viewModel.Sector = user.Address.Sector;
+            //viewModel.Municipality = $"{user.Address.Municipality.MunicipalityId} {user.Address.Municipality.Description}";
+
+            return viewModel;
+        }
+
+        public async Task<IOperationResult<string>> UpdateUser(ApplicationUserCreateViewModel user)
+        {
+            try
+            {
+                UserAddress address = await BuildUserAddress(user);
+                UserPhone phone = BuildUserPhone(user);
+                UserRole role = await _userRoleRepository.FindAsync(x => x.UserRoleId == (int)RoleTypes.Client);
+
+                ApplicationUser userFound = await _applicationUserRepository.FindAsync(dbUser => dbUser.Email == user.Email);
+
+                userFound.UserId = user.UserId;
+                userFound.Name = user.Name;
+                userFound.Lastname = user.Lastname;
+                userFound.Email = user.Email;
+                userFound.Address = address;
+                userFound.Phone = phone;
+                userFound.Role = role;
+
+                await _applicationUserRepository.SaveAsync();
+
+                return BasicOperationResult<string>.Ok("Usuario actualizado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return BasicOperationResult<string>.Fail("Ocurrió un error actualizando al usuario.", ex.ToString());
+            }
+        }
+
+        public async Task<IOperationResult<string>> DeleteUser(string userId)
+        {
+            try
+            {
+                ApplicationUser userToDelete = await _applicationUserRepository.FindAsync(user => user.UserId == userId);
+
+                _applicationUserRepository.Remove(userToDelete);
+
+                await _applicationUserRepository.SaveAsync();
+
+                return BasicOperationResult<string>.Ok("Usuario eliminado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return BasicOperationResult<string>.Fail("Ocurrió un error eliminando el usuario.", ex.ToString());
+            }
+        }
+
     }
 }
