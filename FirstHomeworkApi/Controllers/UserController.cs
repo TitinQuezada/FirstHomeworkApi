@@ -78,5 +78,18 @@ namespace FirstHomeworkApi.Controllers
 
             return Ok();
         }
+
+        [HttpGet("validate-user-existence/{email}")]
+        public async Task<IActionResult> ValidateUserExistence(string email)
+        {
+            IOperationResult<bool> validateuserExistenceResult = await _applicationUserManager.ValidateUserExist(email);
+
+            if (!validateuserExistenceResult.Success)
+            {
+                return BadRequest(validateuserExistenceResult.Message);
+            }
+
+            return Ok(validateuserExistenceResult.Entity);
+        }
     }
 }

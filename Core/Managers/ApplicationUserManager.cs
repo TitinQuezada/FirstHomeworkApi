@@ -172,7 +172,6 @@ namespace Core.Managers
                 userFound.UserId = user.UserId;
                 userFound.Name = user.Name;
                 userFound.Lastname = user.Lastname;
-                userFound.Email = user.Email;
                 userFound.Address = address;
                 userFound.Phone = phone;
                 userFound.Role = role;
@@ -202,6 +201,21 @@ namespace Core.Managers
             catch (Exception ex)
             {
                 return BasicOperationResult<string>.Fail("Ocurrió un error eliminando el usuario.", ex.ToString());
+            }
+        }
+        
+
+            public async Task<IOperationResult<bool>> ValidateUserExist(string email)
+        {
+            try
+            {
+                bool isUserExist = await _applicationUserRepository.ExistsAsync(user => user.Email == email);
+
+                return BasicOperationResult<bool>.Ok(isUserExist);
+            }
+            catch (Exception ex)
+            {
+                return BasicOperationResult<bool>.Fail("Ocurrió un error eliminando el usuario.", ex.ToString());
             }
         }
 
